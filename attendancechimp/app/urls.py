@@ -1,10 +1,10 @@
-from django.urls import path
-
+from django.urls import path, include
+from django.contrib import admin
 from . import views
+from django.views.generic.base import TemplateView
 
 urlpatterns = [
     path('', views.index, name='index'),
-    path('<int:question_id>/', views.detail, name='detail'),
-    path('<int:question_id>/results/', views.results, name='results'),
-    path('<int:question_id>/vote/', views.vote, name='vote'),
+    path('accounts/', include('django.contrib.auth.urls')),
+    path("login", TemplateView.as_view(template_name='login.html'), name = 'login'),
 ]

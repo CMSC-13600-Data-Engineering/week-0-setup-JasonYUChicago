@@ -1,0 +1,23 @@
+<!-- templates/new.html -->
+<form method="post" action="course_created/">
+{% csrf_token %}
+
+<label for="course_name:">Course Name:</label><br>
+<input type="text" name="course_name" ><br>
+
+<label for="course_number">Course Number:</label><br>
+<input type="text" name="course_number"><br>
+
+<label for="start">Start Date:</label><br>
+<input type="date" name="last_name"><br>
+
+<label for="end">End Date:</label><br>
+<input type="date" name="end"><br>
+
+<label for="meet_time">Meeting Time:</label><br>
+<input type="text" name="meet_time"><br><br>
+
+<input type="submit" value="Sign Up">
+</form>
+
+{{error}}

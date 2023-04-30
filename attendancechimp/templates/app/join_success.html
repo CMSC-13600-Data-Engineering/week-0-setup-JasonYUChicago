@@ -1,0 +1,7 @@
+<form method="post" action="">
+    {% csrf_token %}
+    
+    Congrats {{request.user.email}}, you have successfully enrolled in the course!
+    
+    
+    {{error}}

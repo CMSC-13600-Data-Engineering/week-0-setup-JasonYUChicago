@@ -1,27 +1,9 @@
 <!-- templates/new.html -->
 <form method="post" action="">
 {% csrf_token %}
-{% if instructor.is_authenticated %}
 
-Congrats, {{instructor.email}} has successfully logged in.
+Congrats, {{user.email}} has successfully logged in.
 
-{% block content %}
-<div class="container">
-    <div class="row">
-        <div class="col-md-12">
-            <h1>All Students </h1>
-            {% for data in form %}
-                {{data.student_id}}
-                {{data.first_name}}
-                {{data.last_names}}
-                {{data.email}}
-                {{data.password}}
-            {% endfor %}
-        </div>
-    </div>
-</div>
-
-{% endblock content %}
 
 
 {{error}}

@@ -1,0 +1,11 @@
+<form method="post" action="join_try/{{course_number}}">
+{% csrf_token %}
+
+<h1>{{ course_name }}</h1>
+<p>Course Number: {{ course_number }}</p>
+
+<input type="hidden" name="course_id" value="{{ course.course_number }}">
+<button type="submit">Join</button>
+</form>
+
+{{error}}

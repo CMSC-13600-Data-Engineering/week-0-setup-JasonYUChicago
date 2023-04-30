@@ -2,7 +2,12 @@
 <form method="post" action="">
 {% csrf_token %}
 
-Congrats, the course has been created successfully!
+Congrats, {{request.user.username}} the course has been created successfully!<br>
+
+Here are your URLS:<br>
+A logged student can join the course: /app/join/{{course_number}}<br>
+A logged in instructor can display a QR code: /app/attendance/{{course_number}}<br>
+A logged in student can upload a picture of the QR code
 
 
 {{error}}

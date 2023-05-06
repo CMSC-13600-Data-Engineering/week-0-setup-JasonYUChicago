@@ -17,14 +17,17 @@ def loginForm(request, error_msg=''):
     return render(request,'app/login.html', {'error':error_msg})
 
 def make_login(request):
-    email = request.POST['email']
-    password = request.POST['pwd']
-    user = authenticate(username=email, password=password)
-    if user is not None:
-        login(request,user)
-        return render(request, 'app/course.html')
-    else:
-        return loginForm(request, error_msg='did not work')
+    try:
+        email = request.POST['email']
+        password = request.POST['pwd']
+        user = authenticate(username=email, password=password)
+        if user is not None:
+            login(request,user)
+            return render(request, 'app/success.html')
+        else:
+            return loginForm(request, error_msg='did not work')
+    except:
+        return loginForm(request,'Please Enter a Valid Username and Password')
 
 #Logout:
 def logout_view(request):
@@ -32,7 +35,7 @@ def logout_view(request):
     return loginForm(request,'You have just logged out!')
     
 
-#ADDING INSTRUCTORS
+#ADDING INSTRUCTORS & STUDENTS
 
 def addUserForm(request, error_msg=''):
     return render(request, 'app/register.html', {'error':error_msg})
@@ -41,55 +44,36 @@ def handleUserForm(request):
     #if request.method != "POST":
     #    return HttpResponse("Error: the request is not an HTTP POST request\n", status=500)
     #print(str(request.POST))
-    type = 'Student'
-    #type = request.POST['role']
 
+    #Check what role the person signing in is (instructor or student)
+    try:
+        type = request.POST['role']
+    except:
+        return addUserForm(request,error_msg='Please designate if you are an Instructor or Student')
+
+    #Assign needed variables from user input
+    try:
+        first_name = request.POST['fn']
+        last_name = request.POST['ln']
+        email = request.POST['email']
+        password = request.POST['pwd']
+    except:
+        return addUserForm(request, error_msg='Please fill out all the fields of the form')
+    
+    #Try adding a user based on the indicated role (Instructor/Student)
     if(type=='Instructor'):
-        try:
-            first_name = request.POST['fn']
-            last_name = request.POST['ln']
-            email = request.POST['email']
-            password = request.POST['pwd']
-        except:
-            return addUserForm(request, error_msg='Please fill out all the fields of the form')
         try:
             addInstructor(first_name,last_name,email,password)
         except Exception as e:
             return addUserForm(request, error_msg='Error: There is a database error in adding this Instructor: ' + str(e))
-        try:
-            user = authenticate(username=email, password=password)
-            if user is not None:
-                login(request,user)
-                return redirect(handleCourseForm)
-        except Exception as e: 
-            return addUserForm(request,error_msg='Error: The login in not working')
-#        return addUserForm(request, error_msg='Could Not Log you In!')
-    
     elif(type == 'Student'):
-        try:
-            first_name = request.POST['fn']
-            last_name = request.POST['ln']
-            email = request.POST['email']
-            password = request.POST['pwd']
-        except:
-            return addUserForm(request, error_msg='Please fill out all the fields of the form')
         try:
             addStudent(first_name,last_name,email,password)
         except Exception as e:
-            return addUserForm(request, error_msg='Error: There is a database error in adding this Student '+ str(e))
-        try:
-            user = authenticate(username=email, password=password)
-            if user is not None:
-                login(request,user)
-                return render(request, 'app/success.html')
-            else:
-                return loginForm(request, error_msg='did not work')
-        except Exception as e: 
-            return addUserForm(request,error_msg='Error: The login in not working')
-    else:
-        return addUserForm(request, 'it didnt work')
-
-
+            return addUserForm(request,error_msg='Error: There is a database error in adding this Student: ' + str(e))
+    
+    #Log the user in after sign up
+    return make_login(request)
 
 
 #THE /app/create VIEW
@@ -102,10 +86,12 @@ def handleCourseForm(request):
     #    return HttpResponse("Error: the request is not an HTTP POST request\n", status=500)
     #print(str(request.POST)
 
+    #Try to access user data to see if they are actually logged in
     try:
         Instructor_id = Instructor.objects.get(email=request.user.email)
     except:
         return addCourseForm(request,error_msg='You are not logged in as an instructor. Please log in.')
+
 
     try:
         course_name = request.POST['course_name']
@@ -116,7 +102,7 @@ def handleCourseForm(request):
         meet_start = request.POST['meet_start']
         meet_end = request.POST['meet_end']
     except Exception as e:
-        return addCourseForm(request,error_msg='please fill out all the fields of the form')
+        return addCourseForm(request,error_msg='Please fill out all the fields of the form')
     
     #first check is in the models.py page
 
@@ -137,16 +123,18 @@ def handleCourseForm(request):
     if meet_start>meet_end:
         return addCourseForm(request, error_msg='The start time cannot be later than the end time- unless it is a midnight class')
     
+    #Tries to create a new entry in the Course table with the input data
     try:
         addCourse(course_name,course_number,Instructor_id,start,end,meet_days,meet_start,meet_end)
     except Exception as e:
         return addCourseForm(request, error_msg='Error: There is a database error in adding this Course ' + str(e))
-    return course_created(request,course_number)
+    return course_created(request,course_number=course_number,course_name=course_name)
 
-def course_created(request, error_msg='',course_number=''):
+def course_created(request, error_msg='',course_number='',course_name=''):
     return render(request,'app/course_created.html',{
         'error':error_msg,
         'course_number':course_number,
+        'course_name':course_name
         })
 
 #Student join url creator:
@@ -160,6 +148,7 @@ def handleEnrollmentForm(request,course_number,error_msg=''):
     return render(request,'app/join.html',{
         "course_name":Course.objects.get(course_number=course_number).course_name,
         "course_number":course_number,
+        "error":error_msg,
     })
 
 def handleFailureForm(request,course_number,error_msg=''):
@@ -174,67 +163,91 @@ def enroll_success(request, course_number, error_msg=''):
         email = Student.objects.get(email=request.user.email)
         course = Course.objects.get(course_number=course_number)
     except:
-        return addEnrollmentForm(request,error_msg = email + "is not a valid email")
-    
-    #check that student isn't already enrolled in a class at the specified time
+        return handleEnrollmentForm(request,course_number=course_number,error_msg = request.user.email + " is not a valid Student email")
+
+    #check that student is not already enrolled in a course happening at the same time
     for already_enrolled in Enrollment.objects.filter(email=email):
         new_course_start = course.meet_start_time
         new_course_end = course.meet_end_time
-        old_course = Course.objects.get(course_number=already_enrolled.course_number)
+        old_course = Course.objects.get(course_number=already_enrolled.course_number.course_number)
         old_start = old_course.meet_start_time
         old_end = old_course.meet_end_time
         if not ((new_course_start>old_end and new_course_end>old_end) or (new_course_start<old_start and new_course_end<old_start)):
-            return addEnrollmentForm(request,error_msg= 'You are already enrolled in a class for that time slot')
+            return handleFailureForm(request,course_number=course_number,error_msg= 'You are already enrolled in a class for that time slot')
 
+    #populate the Enrollment class with the current users information
     try:
         addEnrollment(email,course)
     except Exception as e:
-        return handleFailureForm(request,course_number,error_msg='There is a database error in adding this student to course enrollment ' + str(e))
+        return handleFailureForm(request,course_number,error_msg='There is a database error in adding this student to course enrollment: ' + str(e))
     return render(request,'app/join_success.html')
 
 #Attendance:
 def handleAttendanceForm(request,course_number,error_msg=''):
-    try:
-        teacher = Instructor.objects.get(email=request.user.email)
-        if request.user.is_authenticated and Instructor.objects.filter(email=request.user.email).count()>0:
-            if Course.objects.get(course_number=course_number,email=teacher.email) is not None:
-                class_code = ''.join(random.choices(string.ascii_lowercase + string.digits, 10))
-                generateQR(course_number,class_code)
+    #checks that the user is logged in
+    if request.user.is_authenticated:
+        #checks that the user is an instructor:
+        try:
+            teacher = Instructor.objects.get(email=request.user.email)
+        except:
+            return loginForm(request,'Please log in as an Instructor to access course attendance')
+        class_code = ''.join(random.choices(string.ascii_lowercase + string.digits,k=10))
+        try:  
+            course_num = Course.objects.get(course_number=course_number)
+        except:
+            return handleErrorForm(request,error_msg='No such course exists!')
+        try:
+            if Course.objects.get(course_number=course_number).instructor_id.instructor_id==teacher.instructor_id:
+                generateQR(course_num,class_code)
                 return render(request,'app/attendance_form.html',{
                     'error':error_msg,
                     'class_code':class_code,
                     'course_number':course_number,
                 })
-        else:
-            return render(request,'course_created.html',{'error':'You are not the instructor for this course'})
-    except:
-        return render(request,'registration/login.html')
-    
+            else:
+                return handleErrorForm(request,error_msg ='You are not the instructor for this course!')
+        except:
+            return handleErrorForm(request, error_msg='what is happening?')
+    else:
+        return loginForm(request,'Please log in before doing anything else!')
+
+   
 #uploading QR code:
 def handleuploadQR(request,course_number,error_msg=''):
-    #try:
-    student = Student.objects.get(email=request.user.email)
-    if request.user.is_authenticated and Student.objects.filter(email=request.user.email).count()>0:
-        if Enrollment.objects.get(course_number=course_number,email=student.email) is not None:
-            qr_id = Generate_QR.objects.get(qr_id=0)
-            student_id = student
-            uploadQR(qr_id,student_id)
-            return render(request,'app/upload.html',{
-                'error':error_msg,
-                'course_number':course_number,
-            })
-        else:
-            handleErrorForm(request,'You are not registered for this course!')
+    #checks that current user is logged in
+    if request.user.is_authenticated:
+        #check that current user is a student
+        try:
+            student = Student.objects.get(email=request.user.email)
+        except:
+            return handleErrorForm(request,error_msg='You are not a student. Please login as a student.')
+        try:  
+            course_num = Course.objects.get(course_number=course_number)
+        except:
+            return handleErrorForm(request,error_msg='No such course exists!')
+        try:
+            img = request.POST['file']
+        except:
+            return render(request,'app/upload.html',{'error':'No file detected!'})
+        try:
+            if Enrollment.objects.filter(email=student.email).get(course_number=course_number) is not None:
+                course_qrs = Generate_QR.objects.filter(course_number=course_number)
+                class_code = course_qrs[len(course_qrs)-1].class_code
+                student_id = student.student_id
+                uploadQR(class_code =  class_code, student_id = student_id,img=img)
+                return render(request,'app/upload.html',{
+                    'error':error_msg,
+                    'course_number':course_number,
+                })
+            else:
+                handleErrorForm(request,'You are not registered for this course!')
+        except:
+            return handleErrorForm(request, 'Could not update your attendance!')
     else:
-        handleErrorForm(request,'The authentification returned:' + str(request.user.is_authenticated) + 'the email count is'
-                        + Student.objects.filter(email=request.user.email).count())
-    #except:
-    #    return render(request,'registration/login.html',{'error':'Please log in as a student'+str(var)})
+        return loginForm(request,'Please login first')
 
-def handleuploadQR(request,course_number,error_msg=''):
-    return handleErrorForm(request,Generate_QR.objects.get(qr_id=0))
 
 def handleErrorForm(request,error_msg=''):
-    render(request,'app/error.html',{
+    return render(request,'app/error.html',{
         'error':error_msg,
     })

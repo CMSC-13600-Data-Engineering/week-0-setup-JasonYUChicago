@@ -26,7 +26,7 @@ class Instructor(models.Model):
 class Course(models.Model):
     course_id = models.AutoField(primary_key=True)
     course_name = models.CharField(max_length=100)
-    course_number = models.CharField(unique=True, null=False, max_length=20)
+    course_number = models.CharField(unique=True, null=True, max_length=20)
     instructor_id = models.ForeignKey(Instructor, on_delete=models.CASCADE)
     start = models.DateTimeField(null=False)
     end = models.DateTimeField(null=False)
@@ -47,14 +47,15 @@ class Generate_QR(models.Model):
     course_number = models.ForeignKey(Course, to_field='course_number', on_delete=models.CASCADE)
     timestamp = models.DateTimeField(auto_now_add=True)
     # `auto_now_add=True` automatically set field's value to time it was uploaded
-    class_code = models.CharField(max_length=11,null=False)
+    class_code = models.CharField(unique = True,max_length=11,null=True)
 
 # creates a model that keeps track of QRs uploaded
 class Upload_QR(models.Model):
     upload_id = models.AutoField(primary_key=True)
-    qr_id = models.ForeignKey(Generate_QR, on_delete=models.CASCADE)
+    class_code = models.ForeignKey(Generate_QR, to_field='class_code', on_delete=models.CASCADE)
     student_id = models.ForeignKey(Student, on_delete=models.CASCADE)
     timestamp = models.DateTimeField(auto_now_add=True)
+    qr = models.ImageField(upload_to=None, height_field=None,width_field=None, max_length=100)
 
 # adds an instructor to the Instructor class
 def addInstructor(fn, ln, email, pwd):
@@ -110,12 +111,12 @@ def addEnrollment(email, num):
     logging.info('Added student' + str(email) + 'to course' +str(num))
 
 def generateQR(course_number,class_code):
-    if generateQR.objects.filter(class_code=class_code).count()>0:
+    if Generate_QR.objects.filter(class_code=class_code).count()>0:
         raise ValueError('This class already has a class code associated with it')
     newQR = Generate_QR(course_number=course_number, class_code=class_code)
     newQR.save()
 
-def uploadQR(qr_id,student_id):
-    newQR = Upload_QR(qr_id=qr_id,student_id=student_id)
+def uploadQR(class_code,student_id,img):
+    newQR = Upload_QR(class_code = class_code,student_id=student_id,qr=img)
     newQR.save()
     

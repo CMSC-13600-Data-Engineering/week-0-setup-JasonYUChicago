@@ -1,0 +1,6 @@
+<form method="post" action="">
+    {% csrf_token %}
+    
+    {{request.user.email}} could not enroll in the course because of the following error: <br>
+    
+    {{error}}

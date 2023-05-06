@@ -1,0 +1,17 @@
+<!-- templates/new.html -->
+<form method="post" action="">
+{% csrf_token %}
+
+{% load static %}
+
+<script type="text/javascript" src="{% static 'qrcode.js' %}" ></script>
+
+<div id='ele_qrcode'/>
+<script type="text/javascript">
+    qr_code = new QRCode(document.getElementById('ele_qrcode'))
+    qr_code.makeCode({{ "class_code" }})
+</script>
+
+QR CODE HERE: EXCEPT SCRIPT IS NOT WORKING
+
+{{error}}

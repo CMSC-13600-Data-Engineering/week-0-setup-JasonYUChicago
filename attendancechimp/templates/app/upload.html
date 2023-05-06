@@ -1,0 +1,25 @@
+<!-- templates/registration/login.html -->
+{% extends 'base.html' %}
+
+
+{% load static %}
+
+{% block content %}
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+
+    Upload Your QR Code Here:<br>
+
+    <input type="file" name="myfile">
+    <button type="submit">Upload</button>
+  </form>
+
+  {% if uploaded_file_url %}
+    <p>File uploaded at: <a href="{{ uploaded_file_url }}">{{ uploaded_file_url }}</a></p>
+  {% endif %}
+
+
+  
+{{error}}
+{% endblock %}
+

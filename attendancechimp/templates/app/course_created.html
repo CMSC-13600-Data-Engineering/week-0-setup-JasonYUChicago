@@ -1,0 +1,13 @@
+<!-- templates/new.html -->
+<form method="post" action="">
+{% csrf_token %}
+
+Congrats, {{request.user.username}} the course ({{course_name}} {{course_number}}) has been created successfully!<br>
+
+Here are your URLS:<br>
+A logged student can join the course: /app/join/{{course_number}}<br>
+A logged in instructor can display a QR code: /app/attendance/{{course_number}}<br>
+A logged in student can upload a picture of the QR code: /app/upload/{{course_number}}<br>
+
+
+{{error}}

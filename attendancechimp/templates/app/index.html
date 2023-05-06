@@ -11,6 +11,7 @@
     <p>Hi <b><mark> {{ user.username }} </mark></b> welcome to {{ title }}!</p>
     <p>Now we are going to try and use a variable: <i>should say "SUCCESS!" underneath if this works</i></p>
     <p> {{ test }}</p>
+    <p><a href="{%url 'logout' %}"">Log Out</a></p>
   </div>
 {% else %}
   <p>You are not logged in</p>

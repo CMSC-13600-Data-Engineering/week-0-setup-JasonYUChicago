@@ -1,0 +1,9 @@
+<!-- templates/new.html -->
+<form method="post" action="">
+{% csrf_token %}
+
+Congrats, {{user.email}} has successfully logged in.
+
+
+
+{{error}}

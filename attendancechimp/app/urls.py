@@ -20,5 +20,7 @@ urlpatterns = [
     path('attendance/<int:course_number>',views.handleAttendanceForm, name='attendance'),
     path('upload/<int:course_number>',views.handleuploadQR,name='uploadQR'),
     path('error/',views.handleErrorForm,name='error'),
+    path('overview/<int:course_number>',views.handleOverviewForm,name='overview'),
+    path('student/<int:course_number>/<str:email>',views.handleStudentForm, name='student')
 
 ]

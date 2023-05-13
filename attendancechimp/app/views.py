@@ -7,6 +7,9 @@ from django.contrib.auth.models import User
 from .models import*
 from datetime import datetime
 import random, string
+from django.contrib.auth.decorators import login_required
+
+@login_required(login_url='/accounts/login/')
 
 def index(request):
     return render(request, 'app/index.html', {"test":"SUCCESS!",
@@ -226,7 +229,7 @@ def handleuploadQR(request,course_number,error_msg=''):
         except:
             return handleErrorForm(request,error_msg='No such course exists!')
         try:
-            img = request.POST['file']
+            img = request.POST['up_file']
         except:
             return render(request,'app/upload.html',{'error':'No file detected!'})
         try:
@@ -236,7 +239,7 @@ def handleuploadQR(request,course_number,error_msg=''):
                 student_id = student.student_id
                 uploadQR(class_code =  class_code, student_id = student_id,img=img)
                 return render(request,'app/upload.html',{
-                    'error':error_msg,
+                    'error':'It worked!',
                     'course_number':course_number,
                 })
             else:
@@ -251,3 +254,69 @@ def handleErrorForm(request,error_msg=''):
     return render(request,'app/error.html',{
         'error':error_msg,
     })
+
+#Overview Form:
+
+def handleOverviewForm(request,course_number,error_msg=''):
+    #check that user is logged in
+    if request.user.is_authenticated:
+        try:
+            instructor = Instructor.objects.get(email=request.user.email)
+        except:
+            return loginForm(request,'Please log in as an Instructor!')
+        try:
+            course_num = Course.objects.get(course_number=course_number)
+        except:
+            return handleErrorForm(request,error_msg='No such course exists!')
+        try:
+            course_name = Course.objects.get(course_number=course_number).course_name
+            total_students = len(Enrollment.objects.filter(course_number=course_number))
+            date = []
+            fraction = []
+            for i in Generate_QR.objects.filter(course_number=course_number):
+                date.append(i.timestamp)
+                stus = Upload_QR.objects.filter(class_code = i.class_code)
+                fraction.append(len(stus)/total_students)
+            diction = {}
+            for i in range(len(date)):
+                diction[date[i]]=fraction[i]
+        except:
+            return handleErrorForm(request,error_msg='There is missing data!')
+        return render(request,'app/overview.html',{
+            'course_name':course_name,
+            'course_number':course_number,
+            'total_students':total_students,
+            'date':date,
+            'fraction':fraction,
+            'diction':diction,
+        })
+    else:
+        return loginForm(request,'Please log in as an Instructor!')
+    
+def handleStudentForm(request,course_number,email,error_msg=''):
+    #check that user is logged in:
+    if request.user.is_authenticated:
+        try:
+            instructor = Instructor.objects.get(email=request.user.email)
+        except:
+            return loginForm(request,'Please log in as an instructor!')
+        try:
+            stu = Student.objects.get(email=email)
+            course = Course.objects.get(course_number=course_number)
+            meetings = Generate_QR.objects.filter(course_number=course_number)
+        except:
+            return handleStudentForm(request,'Student is not in this course')
+        diction = {}
+        for i in meetings:
+            if len(Upload_QR.objects.filter(class_code=i.class_code,student_id=stu.student_id))>0:
+                diction[i.timestamp] = 1
+            else:
+                diction[i.timestamp] = 0
+        return render(request,'app/student.html',{
+            'course_name':course.course_name,
+            'course_number':course_number,
+            'diction':diction,
+            'student_name':stu.first_name+stu.last_name,
+        })
+    else:
+        return loginForm(request,'Please log in!')

@@ -1,0 +1,27 @@
+{% csrf_token %}
+
+{% block title %}
+<h1>Course Name: {{ course_name }} {{ course_id }}</h1>
+{% endblock title %}
+
+{% block content %}
+  <p>Number of students in course: {{ total_students }}</p>
+  <table>
+    <thead>
+      <tr>
+        <th>Class Meeting Date</th>
+        <th>Uploaded Images</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for date, fraction in diction.items %}
+        <tr>
+          <td>{{ date|date:"F d, Y" }}</td>
+          <td>{{ fraction|floatformat:"2" }}%</td>
+        </tr>
+      {% empty %}
+      {% endfor %}
+    </tbody>
+  </table>
+  
+{% endblock %}

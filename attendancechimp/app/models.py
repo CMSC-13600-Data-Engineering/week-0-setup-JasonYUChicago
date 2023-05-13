@@ -2,6 +2,7 @@ from django.db import models
 import logging
 from django.contrib.auth.models import User
 
+
 logging.basicConfig(level=logging.DEBUG)
 
 

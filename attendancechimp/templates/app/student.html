@@ -1,0 +1,26 @@
+{% csrf_token %}
+
+{% block content %}
+    <h1>Class Name/Number: {{ course_name }} {{ course_number }}</h1>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Attendance</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for date, attendance in diction.items %}
+                <tr>
+                    
+                    <td style="text-align:center"> {{ date|date:"F d, Y" }}</td>
+                    <td style="text-align:center"> {{ attendance|floatformat:"2" }}</td>
+                </tr>
+            {% empty %}
+            {% endfor %}
+        </tbody>
+    </table>
+    
+{% endblock %}
+

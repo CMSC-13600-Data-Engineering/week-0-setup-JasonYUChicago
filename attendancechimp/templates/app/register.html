@@ -1,0 +1,24 @@
+<!-- templates/new.html -->
+<form method="post" action="">
+{% csrf_token %}
+
+<label for="fn">First Name:</label><br>
+<input type="text" name="fn"><br>
+
+<label for="ln">Last Name:</label><br>
+<input type="text" name="ln"><br>
+
+<label for="role">Instructor or Student:</label><br>
+<input type = 'radio' name = role value="Instructor" required> Instructor<br>
+<input type = 'radio' name = role value='Student' required> Student<br>
+
+<label for="email">Email:</label><br>
+<input type="text" name="email"><br>
+
+<label for="pwd">Password:</label><br>
+<input type="text" name="pwd"><br><br>
+
+<input type="submit" value="Sign Up">
+</form>
+
+{{error}}

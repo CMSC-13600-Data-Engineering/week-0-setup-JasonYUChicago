@@ -1,11 +1,18 @@
 <!-- templates/home.html -->
 {% extends 'base.html' %}
 
-{% block title %}Home{% endblock %}
+{% block title %}{{section.title}}{% endblock %}
 
 {% block content %}
 {% if user.is_authenticated %}
-  Hi {{ user.username }}!
+  <div style=""text-align: center;>
+    <p>My Bio: I am Jason Yu, a thrid year student at the University of Chicago studying Math and Data Science.</p>
+    <p>Teammate Bio: She is Victoria Kielb, a 4th year at the University of Chciago studying Econ and Data Science</p>
+    <p>Hi <b><mark> {{ user.username }} </mark></b> welcome to {{ title }}!</p>
+    <p>Now we are going to try and use a variable: <i>should say "SUCCESS!" underneath if this works</i></p>
+    <p> {{ test }}</p>
+    <p><a href="{%url 'logout' %}"">Log Out</a></p>
+  </div>
 {% else %}
   <p>You are not logged in</p>
   <a href="{% url 'login' %}">Log In</a>

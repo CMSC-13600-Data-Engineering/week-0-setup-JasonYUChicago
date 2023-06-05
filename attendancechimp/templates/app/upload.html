@@ -1,0 +1,21 @@
+<!-- templates/registration/login.html -->
+{% extends 'base.html' %}
+
+
+{% load static %}
+
+{% block content %}
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+
+    Upload Your QR Code Here:<br>
+
+    <input type="file" name="up_file">
+    <button type="submit">Upload</button>
+  </form>
+
+
+  
+{{error}}
+{% endblock %}
+

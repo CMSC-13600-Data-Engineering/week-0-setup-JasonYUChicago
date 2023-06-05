@@ -139,6 +139,23 @@ Stop the `runserver` process above. You should install a sqlite3 client on your 
 
 1. List all of the database tables currently in your database and what command you used to find them
 
+Commands Used:
+open db.sqlite3
+sqlite3
+.tables
+
+Database tables currently in database:
+auth_group
+auth_group_permissions
+auth_permission
+auth_user
+auth_user_groups
+auth_user_user_permissions
+django_admin_log
+django_content_type
+django_migrations
+django_session
+
 ## Step 7. Modifying The Front-End (TODO)
 While we understand that this class is not a web-application design course, it will be valuable for you to understand how the front-end of the application interfaces with the python code. You will modify `templates/app/index.html` to have the following:
 1. The webpage contains a brief bio of you and your teammates at the top
